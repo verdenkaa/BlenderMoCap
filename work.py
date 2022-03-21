@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import bpy
+import json
 
 
 mp_drawing = mp.solutions.drawing_utils
@@ -11,7 +12,10 @@ cap = cv2.VideoCapture(0)
 bpy.ops.object.mode_set(mode='OBJECT')
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.mode_set(mode='EDIT')
-with mp_pose.Pose(static_image_mode=False, smooth_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+with open('config/ways.json', "r") as f:
+    ways = json.load(f)
+with mp_pose.Pose(static_image_mode=ways["static_image_mode"], smooth_landmarks=ways["smooth_landmarks"],
+                  min_detection_confidence=ways["min_detection_confidence"], min_tracking_confidence=ways["min_tracking_confidence"]) as pose:
     for n in range(9000):
         success, image = cap.read()
         if not success:

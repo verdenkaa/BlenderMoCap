@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import shutil
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
@@ -15,7 +16,6 @@ class MyWidget(QMainWindow):
 
         self.Start.clicked.connect(self.run)
         self.way_button.clicked.connect(self.get_way)
-        self.export_button.clicked.connect(self.get_export_way)
         self.export_button.clicked.connect(self.get_export_way)
 
         with open('config/ways.json', "r") as f:
@@ -38,7 +38,16 @@ class MyWidget(QMainWindow):
 
 
     def run(self):
-        os.system("D:/Programs/steam/steamapps/common/Blender/blender.exe blend/pose.blend --python work.py")
+        i = 0
+        if not self.ways["new_file_status"]:
+            while os.path.isfile(self.ways["export"] + f"/pose_{i}.blend"):
+                i += 1
+            shutil.copyfile("blend/pose.blend", self.ways["export"] + f"/pose_{i}.blend")
+        else:
+            shutil.copyfile("blend/pose.blend", self.ways["export"] + f"/pose_{i}.blend")
+        shutil.copyfile("blend/pose_tracking_full_body_landmarks.png", self.ways["export"] + "/pose_tracking_full_body_landmarks.png")
+
+        os.system("D:/Programs/steam/steamapps/common/Blender/blender.exe " + str(self.ways["export"] + f"/pose_{i}.blend") + " --python work.py")
 
     def get_way(self):
         dir = QFileDialog.getOpenFileName(None, 'Укажите blender.exe', './', "*.exe")
