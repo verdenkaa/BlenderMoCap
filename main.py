@@ -1,80 +1,78 @@
-import cv2
-import mediapipe as mp
-import bpy
+import sys
+import os
+import json
+from PyQt5 import uic
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
 
 
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
+class MyWidget(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('ui/main.ui', self)
 
-#body = body_setup()
+        self.bool_funk = lambda b: 1 if b.isChecked() else 0
 
-cap = cv2.VideoCapture(0)
-bpy.ops.object.mode_set(mode='OBJECT')
-bpy.ops.object.select_all(action='SELECT')
-bpy.ops.object.mode_set(mode='EDIT')
-with mp_pose.Pose(smooth_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-    for n in range(9000): # 10
-        success, image = cap.read()
-        if not success:
-            continue
+        self.Start.clicked.connect(self.run)
+        self.way_button.clicked.connect(self.get_way)
+        self.export_button.clicked.connect(self.get_export_way)
+        self.export_button.clicked.connect(self.get_export_way)
 
-        # image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        with open('config/ways.json', "r") as f:
+            self.ways = json.load(f)
 
-        image.flags.writeable = False
-        results = pose.process(image)
-
-        # Движение
-        if results.pose_landmarks:
-            bns = results.pose_landmarks.landmark
-            scale = 2
-            for num in range(0, 33):
-                y = (bns[num].z) * 0.5
-                x = (0.5 - bns[num].x) * scale
-                z = (0.5 - bns[num].y) * scale
-                bpy.context.object.data.edit_bones[str(num)].select_tail = True
-                bpy.context.object.data.edit_bones[str(num)].tail = (x, y, z)
-                bpy.context.object.data.edit_bones[str(num)].select_tail = False
-
-            bpy.context.object.data.edit_bones["Bone"].select_tail = True
-            y = ((bns[11].z) * 0.5 + (bns[12].z) * 0.5) / 2
-            x = ((0.5 - bns[11].x) * scale + (0.5 - bns[12].x) * scale) / 2
-            z = ((0.5 - bns[11].y) * scale + (0.5 - bns[12].y) * scale) / 2
-            bpy.context.object.data.edit_bones["Bone"].tail = (x, y, z)
-            bpy.context.object.data.edit_bones["Bone"].select_tail = False
-
-            bpy.context.object.data.edit_bones["Bone"].select_head = True
-            y = ((bns[23].z) * 0.5 + (bns[24].z) * 0.5) / 2
-            x = ((0.5 - bns[23].x) * scale + (0.5 - bns[24].x) * scale) / 2
-            z = ((0.5 - bns[23].y) * scale + (0.5 - bns[24].y) * scale) / 2
-            bpy.context.object.data.edit_bones["Bone"].head = (x, y, z)
-            bpy.context.object.data.edit_bones["Bone"].select_head = False
-
-            bpy.context.object.data.edit_bones["23"].select_head = True
-            bpy.context.object.data.edit_bones["23"].head = (x, y, z)
-            bpy.context.object.data.edit_bones["23"].select_head = False
-
-            bpy.context.object.data.edit_bones["24"].select_head = True
-            bpy.context.object.data.edit_bones["24"].head = (x, y, z)
-            bpy.context.object.data.edit_bones["24"].select_head = False
+        self.way.setText(self.ways["blender_way"])
+        self.export_2.setText(self.ways["export"])
+        self.static_image_mode.setChecked(self.ways["static_image_mode"])
+        self.smooth_landmarks.setChecked(self.ways["smooth_landmarks"])
+        self.new_file_status.setChecked(self.ways["new_file_status"])
+        self.min_detection_confidence.setValue(self.ways["min_detection_confidence"])
+        self.min_tracking_confidence.setValue(self.ways["min_tracking_confidence"])
 
 
-            '''for k in range(33):
-                bones[k].location.y = (bns[k].z)*0.5
-                bones[k].location.x = (0.5-bns[k].x)*scale
-                bones[k].location.z = (0.5-bns[k].y)*scale
-                bones[k].keyframe_insert(data_path="location", frame=n)'''
+        self.static_image_mode.toggled.connect(lambda: self.commit_bool(text="static_image_mode.toggled", check=self.static_image_mode))
+        self.smooth_landmarks.toggled.connect(lambda: self.commit_bool(text="smooth_landmarks", check=self.smooth_landmarks))
+        self.new_file_status.toggled.connect(lambda: self.commit_bool(text="new_file_status", check=self.new_file_status))
+        self.min_detection_confidence.valueChanged.connect(lambda: self.commit_number(text="min_detection_confidence", num=self.min_detection_confidence.value()))
+        self.min_tracking_confidence.valueChanged.connect(lambda: self.commit_number(text="min_tracking_confidence", num=self.min_tracking_confidence.value()))
 
 
-        # Отрисовка
-        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-        image = cv2.flip(image, 1)
-        cv2.imshow('MediaPipe Pose', image)
-        if cv2.waitKey(1) & 0xFF == 27:
-            break
+    def run(self):
+        os.system("D:/Programs/steam/steamapps/common/Blender/blender.exe blend/pose.blend --python work.py")
 
-        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-        bpy.context.scene.frame_set(n)
+    def get_way(self):
+        dir = QFileDialog.getOpenFileName(None, 'Укажите blender.exe', './', "*.exe")
+        self.way.setText(dir[0])
+        self.ways["blender_way"] = dir[0]
+        self.commit()
 
-    cap.release()
-    cv2.destroyAllWindows()
+    def get_export_way(self):
+        dir = QFileDialog.getExistingDirectory(None, 'Укажите папку экспорта')
+        self.export_2.setText(dir)
+        self.ways["export"] = dir
+        self.commit()
+
+    def commit_bool(self, text, check):
+        self.ways[text] = self.bool_funk(check)
+        self.commit()
+
+    def commit_number(self, text, num):
+        self.ways[text] = num
+        self.commit()
+
+    def commit(self):
+        with open('config/ways.json', "w") as f:
+            json.dump(self.ways, f, indent=2)
+
+
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    form = MyWidget()
+    form.show()
+    sys.excepthook = except_hook
+    sys.exit(app.exec())
