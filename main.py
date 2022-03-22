@@ -3,7 +3,6 @@ import os
 import json
 import shutil
 from PyQt5 import uic
-from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
 
 
