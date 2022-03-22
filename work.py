@@ -1,7 +1,22 @@
-import cv2
-import mediapipe as mp
+import subprocess
 import bpy
 import json
+import os
+import sys
+
+python_exe = os.path.join(sys.prefix, 'bin', 'python.exe')
+py_lib = os.path.join(sys.prefix, 'lib', 'site-packages','pip')
+
+try:
+    import cv2
+except ImportError:
+    subprocess.call([python_exe, py_lib, "install", "opencv_python"])
+
+try:
+    import mediapipe as mp
+except:
+    subprocess.call([python_exe, py_lib, "install", "mediapipe"])
+
 
 
 mp_drawing = mp.solutions.drawing_utils
