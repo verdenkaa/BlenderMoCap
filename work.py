@@ -11,11 +11,15 @@ try:
     import cv2
 except ImportError:
     subprocess.call([python_exe, py_lib, "install", "opencv_python"])
+    import cv2
 
 try:
     import mediapipe as mp
-except:
+except ImportError:
     subprocess.call([python_exe, py_lib, "install", "mediapipe"])
+    import mediapipe as mp
+
+
 
 
 

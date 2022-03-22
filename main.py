@@ -46,7 +46,7 @@ class MyWidget(QMainWindow):
             shutil.copyfile("blend/pose.blend", self.ways["export"] + f"/pose_{i}.blend")
         shutil.copyfile("blend/pose_tracking_full_body_landmarks.png", self.ways["export"] + "/pose_tracking_full_body_landmarks.png")
 
-        os.system("D:/Programs/steam/steamapps/common/Blender/blender.exe " + str(self.ways["export"] + f"/pose_{i}.blend") + " --python work.py")
+        os.system(self.ways["blender_way"] + " " + str(self.ways["export"] + f"/pose_{i}.blend") + " --python work.py")
 
     def get_way(self):
         dir = QFileDialog.getOpenFileName(None, 'Укажите blender.exe', './', "*.exe")
