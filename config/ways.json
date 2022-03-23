@@ -1,5 +1,5 @@
 {
-  "blender_way": "D:/Programs/steam/steamapps/common/Blender/blender.exe",
+  "blender_way": "D:/blender-3.1.0-windows-x64/blender.exe",
   "export": "D:/",
   "static_image_mode": 0,
   "smooth_landmarks": 1,
