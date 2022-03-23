@@ -4,27 +4,26 @@ import json
 import os
 import sys
 
-python_exe = os.path.join(sys.prefix, 'bin', 'python.exe')
-py_lib = os.path.join(sys.prefix, 'lib', 'site-packages','pip')
 libs = os.path.join(sys.prefix, 'lib', 'site-packages')
-
-subprocess.call([python_exe, py_lib, "install", "--upgrade", "pip"])
-py_lib = os.path.join(sys.prefix, 'lib', 'site-packages','pip')
 
 try:
     import cv2
 except ImportError:
-    subprocess.call([python_exe, py_lib, "uninstall", "opencv-python"])
-    subprocess.call([python_exe, py_lib, "install", "opencv-python"])
+    subprocess.check_call([sys.executable, "-m", "ensurepip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python"])
     import cv2
 
 try:
     import mediapipe as mp
 except ImportError:
-    subprocess.call([python_exe, py_lib, "uninstall", "mediapipe"])
-    subprocess.call([python_exe, py_lib, "uninstall", "matplotlib"])
-    subprocess.call([python_exe, py_lib, "install", 'matplotlib'])
-    subprocess.call([python_exe, py_lib, "install", "mediapipe"])
+    subprocess.check_call([sys.executable, "-m", "ensurepip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "mediapipe"])
+    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "attr"])
+    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "attrs"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "attrs"])
+
     import mediapipe as mp
 
 
